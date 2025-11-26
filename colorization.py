@@ -26,14 +26,13 @@ class DoubleConv(nn.Module):
 
 
 class UNet_Colorizer(nn.Module):
-    def __init__(self, n_channels_in=2, n_channels_out=3):
+    def __init__(self, n_channels_in=1, n_channels_out=3):
         super(UNet_Colorizer, self).__init__()
-        
-        # =======================================================
-        # == 1. CRITICAL MODIFICATION: Input Layer ==
-        # This layer accepts your 2-channel concatenated tensor
-        # (B&W Image, Attention Map)
-        # =======================================================
+        # Input Layer
+        # The U-Net takes a single-channel grayscale (black & white) image
+        # as input. Attention maps should NOT be concatenated into the
+        # network input; they will be used externally to decide which
+        # weights/regions to update.
         self.inc = DoubleConv(n_channels_in, 64)
 
         # --- Encoder (Down-sampling) ---
@@ -65,7 +64,7 @@ class UNet_Colorizer(nn.Module):
         self.tanh = nn.Tanh()
 
     def forward(self, x):
-        # x is your [Batch_Size, 2, H, W] tensor
+        # x is a [Batch_Size, 1, H, W] grayscale tensor (L channel)
         
         # --- Encoder ---
         x1 = self.inc(x)     # -> 64 channels. This is your first skip connection
